@@ -5,10 +5,42 @@ import os
 import logging
 import sys
 from langchain_community.document_loaders import UnstructuredFileLoader
+from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+import filetype
 import pickle
+
+def load_file_with_filetype(file_path):
+    """Load a file and return a Document object with content and metadata."""
+    # Detect file type using filetype
+    kind = filetype.guess(file_path)
+
+    # Fallback to checking file extension if filetype fails
+    if not kind:
+        print(f"Could not detect file type for: {file_path}")
+        # Assume common text file extensions are valid
+        if file_path.endswith(('.txt', '.py', '.md', '.gitignore', '.json', '.csv', '.xml')):
+            print(f"Treating as text file based on extension: {file_path}")
+        else:
+            print(f"Skipping file with unknown type: {file_path}")
+            return None
+
+    # Only process text-based files
+    if kind and not "text" in kind.mime and not "json" in kind.mime:
+        print(f"Skipping non-text file: {file_path} ({kind.mime})")
+        return None
+
+    # Attempt to read the file as text
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            return Document(page_content=content, metadata={"source": file_path})
+    except Exception as e:
+        print(f"Error reading file {file_path}: {e}")
+        return None
+
 
 def main():
     parser = argparse.ArgumentParser(description='Build a RAG database from documents in a directory.')
@@ -27,23 +59,23 @@ def main():
 
     # Walk through the directory and process files
     for root, dirs, files in os.walk(args.directory):
+        dirs[:] = [d for d in dirs if not d.startswith('.')]
         for file in files:
             total_files += 1
             file_path = os.path.join(root, file)
             logger.info(f"Processing file: {file_path}")
             try:
                 # Load the document
-                loader = UnstructuredFileLoader(file_path)
-                doc = loader.load()
-                
-                # Add metadata to the document
-                for d in doc:
-                    d.metadata['filename'] = file
-                    d.metadata['filepath'] = file_path
-                    d.metadata['directory'] = root
-                
-                documents.extend(doc)
-                processed_files += 1
+                doc = load_file_with_filetype(file_path)
+                if doc:
+                    # Add metadata to the document
+                    doc.metadata["filename"] = file
+                    doc.metadata["filepath"] = file_path
+                    doc.metadata["directory"] = root
+                    documents.append(doc)
+                    processed_files += 1
+                else:
+                    skipped_files += 1
             except Exception as e:
                 logger.warning(f"Error loading file {file_path}: {e}")
                 skipped_files += 1

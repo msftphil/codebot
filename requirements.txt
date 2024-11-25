@@ -1,2 +1,7 @@
 # langchain
-langchain==0.3.7
+langchain==0.3.8
+langchain_community==0.3.8
+unstructured==0.16.6
+sentence-transformers
+#langchain-huggingface
+faiss-cpu
