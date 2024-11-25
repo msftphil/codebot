@@ -51,3 +51,5 @@ Launch the chatbot interface by running chatbot.py:
 
 ## Notes
 Scripts assume that you've already installed ollama and acquired a model (such as those recommended above), and that the ollama server is running (check via ollama ps to confirm).
+
+See example_chat.xt for additional details (usage example)
