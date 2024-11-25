@@ -26,7 +26,7 @@ This script serves as the entry point for interacting with the RAG chatbot. It d
 This files provides and interface between OLLAMA and the langchain backend.
 
 ## Dependencies
-The project requires Python 3.8 or higher, and Ollama (https://ollama.com/)
+The project requires Python 3.8 or higher (On windows, can be installed via https://www.microsoft.com/store/productId/9NCVDN91XZQP?ocid=pdpshare), and Ollama (https://ollama.com/)
 
 Recommend using llama3.2 (https://ollama.com/library/llama3.2) and/or codellama (https://ollama.com/library/codellama) models
 
